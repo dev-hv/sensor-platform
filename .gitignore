@@ -1,0 +1,13 @@
+# Environment Variables / Secrets
+.env
+.env.*
+!.env.example
+
+# OS Generated Files
+.DS_Store
+**/.DS_Store
+
+# Dependencies & Build Files
+node_modules/
+__pycache__/
+dist/

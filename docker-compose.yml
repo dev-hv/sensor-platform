@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: sensor-platform-db
+    environment:
+      POSTGRES_USER: sensor
+      POSTGRES_PASSWORD: sensor_secret
+      POSTGRES_DB: sensor_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

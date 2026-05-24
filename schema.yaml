@@ -1,0 +1,22 @@
+# Sensor platform schema: mandatory columns + dynamic data columns
+# Mandatory columns are always present; dynamic columns define sensor data with validation.
+
+table_name: "sensor_metrics"
+mandatory_columns:
+  - name: "timestamp"
+    sql_type: "TIMESTAMP"
+  - name: "serial_number"
+    sql_type: "VARCHAR(50)"
+dynamic_columns:
+  - name: "temperature"
+    sql_type: "DOUBLE PRECISION"
+    min_value: -40.0
+    max_value: 125.0
+  - name: "humidity"
+    sql_type: "DOUBLE PRECISION"
+    min_value: 0.0
+    max_value: 100.0
+  - name: "bus_voltage"
+    sql_type: "DOUBLE PRECISION"
+    min_value: 0.0
+    max_value: 36.0
