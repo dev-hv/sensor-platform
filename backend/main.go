@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 
+	"sensor-backend/internal/config"
 	"sensor-backend/internal/db"
 	"sensor-backend/internal/handlers"
 	"sensor-backend/internal/middleware"
@@ -46,28 +48,22 @@ func main() {
 	}
 	defer database.Close()
 
-	readKey := os.Getenv("READ_API_KEY")
-	writeKey := os.Getenv("WRITE_API_KEY")
-	if readKey == "" || writeKey == "" {
-		log.Fatal("READ_API_KEY and WRITE_API_KEY must be set")
+	keys, err := config.GetAPIKeys(context.Background())
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	mux := http.NewServeMux()
-    
-    // 1. Remove CORS from the individual routes. Leave Auth wrapping the Handlers.
-    mux.Handle("GET /schema", middleware.Auth(readKey, writeKey, handlers.SchemaHandler(&s)))
-    mux.Handle("GET /metrics", middleware.Auth(readKey, writeKey, handlers.MetricsHandler(database, &s)))
-    mux.Handle("POST /ingest", middleware.Auth(readKey, writeKey, handlers.IngestHandler(database, &s)))
+	mux.Handle("GET /schema", middleware.Auth(keys.ReadKey, keys.WriteKey, handlers.SchemaHandler(&s)))
+	mux.Handle("GET /metrics", middleware.Auth(keys.ReadKey, keys.WriteKey, handlers.MetricsHandler(database, &s)))
+	mux.Handle("POST /ingest", middleware.Auth(keys.ReadKey, keys.WriteKey, handlers.IngestHandler(database, &s)))
 
-    // 2. Wrap the ENTIRE router with the CORS middleware
-    corsHandler := middleware.CORS(mux)
+	corsHandler := middleware.CORS(mux)
 
-    addr := ":" + getEnv("PORT", "8080")
-    log.Printf("listening on %s", addr)
-    
-    // 3. Pass the wrapped corsHandler to the server
-    if err := http.ListenAndServe(addr, corsHandler); err != nil {
-        log.Fatal(err)
+	addr := ":" + getEnv("PORT", "8080")
+	log.Printf("listening on %s", addr)
+	if err := http.ListenAndServe(addr, corsHandler); err != nil {
+		log.Fatal(err)
 	}
 }
 
