@@ -1,15 +1,50 @@
+version: '3.8'
+
 services:
   postgres:
-    image: postgres:15-alpine
-    container_name: sensor-platform-db
+    image: postgres:16-alpine
+    container_name: telemetry_db
     environment:
-      POSTGRES_USER: sensor
-      POSTGRES_PASSWORD: sensor_secret
-      POSTGRES_DB: sensor_db
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-telemetry}
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: telemetry_backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-telemetry}
+    depends_on:
+      - postgres
+    volumes:
+      - ./schema.yaml:/schema.yaml
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: telemetry_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always
 
 volumes:
-  postgres_data:
+  pgdata:
