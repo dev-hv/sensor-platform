@@ -17,8 +17,15 @@ if not WRITE_API_KEY:
     )
     sys.exit(1)
 
-# --- CONFIGURATION ---
-TARGET_URL = "http://localhost:8080/ingest"
+# Define both environments clearly
+ENV_URLS = {
+    "local": "http://localhost:8080/ingest",
+    "prod": "http://54.219.97.94/api/ingest"
+}
+
+# Automatically use local, unless you type 'prod' after the filename
+target_env = "prod" if "prod" in sys.argv else "local"
+TARGET_URL = ENV_URLS[target_env]
 
 # Frequency control: 1 second for local testing, 60+ seconds for cloud
 DELAY_SECONDS = 15

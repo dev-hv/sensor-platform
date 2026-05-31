@@ -1,0 +1,19 @@
+# Production override for AWS EC2.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Backend uses host networking for AWS SSM / IMDSv2 access.
+# Frontend shares the backend network namespace so nginx can proxy to 127.0.0.1:8080.
+
+services:
+  backend:
+    network_mode: host
+    environment:
+      - DB_HOST=127.0.0.1
+
+  frontend:
+    network_mode: "service:backend"
+    ports: !reset []
+    volumes: !reset []
+    build:
+      args:
+        - VITE_READ_API_KEY=${READ_API_KEY}

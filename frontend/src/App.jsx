@@ -11,7 +11,7 @@ import {
 } from 'recharts'
 import './App.css'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const API_BASE = '/api'
 const READ_API_KEY = import.meta.env.VITE_READ_API_KEY || ''
 
 const POLL_MS = 2000
@@ -122,7 +122,7 @@ function App() {
   )
 
   useEffect(() => {
-    fetch(`${API_URL}/schema`, { headers })
+    fetch(`${API_BASE}/schema`, { headers })
       .then((r) => {
         if (!r.ok) throw new Error(r.status === 500 ? 'server_error' : `schema ${r.status}`)
         return r.json()
@@ -147,7 +147,7 @@ function App() {
       }
 
       const qs = params.toString()
-      const url = qs ? `${API_URL}/metrics?${qs}` : `${API_URL}/metrics`
+      const url = qs ? `${API_BASE}/metrics?${qs}` : `${API_BASE}/metrics`
       const res = await fetch(url, { headers, signal })
       if (!res.ok) {
         if (res.status === 500) throw new Error('server_error')
