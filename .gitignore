@@ -3,6 +3,8 @@
 .env.*
 !.env.example
 
+infrastructure/.env
+
 # OS Generated Files
 .DS_Store
 **/.DS_Store

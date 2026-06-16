@@ -7,15 +7,20 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 import requests
 
-load_dotenv()
+# 1. Dynamically resolve the path to the infrastructure folder
+script_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(script_dir, 'infrastructure', '.env')
 
+# 2. Load the specific .env file
+load_dotenv(dotenv_path=env_path)
+
+# 3. Extract the keys
+READ_API_KEY = os.getenv("READ_API_KEY")
 WRITE_API_KEY = os.getenv("WRITE_API_KEY")
+
 if not WRITE_API_KEY:
-    print(
-        "Error: WRITE_API_KEY is missing from the root .env file. "
-        "Please check your configuration."
-    )
-    sys.exit(1)
+    print("CRITICAL ERROR: WRITE_API_KEY is missing. Check infrastructure/.env path.")
+    exit(1)
 
 # Define both environments clearly
 ENV_URLS = {

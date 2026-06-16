@@ -20,7 +20,7 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("warning: .env not loaded: %v", err)
 	}
-	schemaPath := "../schema.yaml"
+	schemaPath := "../infrastructure/schema.yaml"
 	if p := os.Getenv("SCHEMA_PATH"); p != "" {
 		schemaPath = p
 	}

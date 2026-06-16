@@ -1,22 +1,21 @@
 # Production override for AWS EC2.
-# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Usage: docker compose -f infrastructure/docker-compose.yml -f infrastructure/docker-compose.prod.yml up -d
 #
 # Backend uses host networking for AWS SSM / IMDSv2 access.
-# Frontend shares the backend network namespace so nginx can proxy to 127.0.0.1:8080.
+# Frontend proxies API traffic to the host-bound backend via host.docker.internal.
 services:
   frontend:
     build:
-      context: ./frontend
+      context: ../frontend
       dockerfile: Dockerfile
       args:
         - VITE_READ_API_KEY=${READ_API_KEY}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      -  "80:80"
+      - "80:80"
     volumes:
-      # This explicitly overrides any bad mounts and forces the correct file
-      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
   backend:
     network_mode: host
