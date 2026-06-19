@@ -19,7 +19,7 @@ set -euo pipefail
 
 # TLS / domain configuration (production EC2)
 DOMAIN="telemetry.vemurilabs.com"
-CERT_EMAIL="your-email@example.com"
+CERT_EMAIL="hkvemuri@outlook.com"
 CERT_LIVE_DIR="/etc/letsencrypt/live/${DOMAIN}"
 DNS_POLL_INTERVAL_SEC=30
 DNS_POLL_MAX_WAIT_SEC=600
