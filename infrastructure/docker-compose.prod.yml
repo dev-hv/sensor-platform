@@ -2,7 +2,7 @@
 # Usage: docker compose -f infrastructure/docker-compose.yml -f infrastructure/docker-compose.prod.yml up -d
 #
 # Backend uses host networking for AWS SSM / IMDSv2 access.
-# Frontend proxies API traffic to the host-bound backend via host.docker.internal.
+# Frontend terminates TLS and proxies API traffic to the host-bound backend.
 services:
   frontend:
     build:
@@ -14,8 +14,10 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ../frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
 
   backend:
     network_mode: host
