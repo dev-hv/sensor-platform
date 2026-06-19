@@ -159,7 +159,7 @@ provision_initial_ssl() {
     exit 1
   fi
 
-  if [[ ! -d "${CERT_LIVE_DIR}" ]]; then
+  if ! sudo test -d "${CERT_LIVE_DIR}"; then
     echo "CRITICAL: Certbot reported success but ${CERT_LIVE_DIR} was not created." >&2
     exit 1
   fi
