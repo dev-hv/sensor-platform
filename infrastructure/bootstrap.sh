@@ -3,7 +3,8 @@
 # AWS EC2 User Data — Telemetry Platform Bootstrap
 #
 # Provisions a bare-metal Ubuntu instance with container runtime, TLS tooling,
-# and a systemd unit that deploys the sensor-platform stack on first boot.
+# and a systemd unit that invokes deploy.sh on boot. Environment configuration
+# (local .env or AWS SSM secrets) is handled entirely by deploy.sh.
 #
 # Intended usage: paste or reference this script as EC2 "User Data" when
 # launching the instance. Cloud-init executes it as root on initial boot.
@@ -49,7 +50,7 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 usermod -aG docker ubuntu
 
 # -----------------------------------------------------------------------------
-# Section 3: AWS CLI — secrets retrieval and operational tooling
+# Section 3: AWS CLI — required by deploy.sh for SSM secret retrieval
 # -----------------------------------------------------------------------------
 apt-get install -y awscli
 
@@ -59,27 +60,25 @@ apt-get install -y awscli
 apt-get install -y certbot
 
 # -----------------------------------------------------------------------------
-# Section 5: Application repository layout & Secure Clone
+# Section 5: Application repository — secure clone from GitHub
 # -----------------------------------------------------------------------------
 mkdir -p "${REPO_DIR}"
 chown -R ubuntu:ubuntu "${REPO_DIR}"
 
 echo "Fetching GitHub Access Token from AWS SSM..."
-GITHUB_TOKEN=$(aws ssm get-parameter --name "/telemetry/prod/GITHUB_TOKEN" --with-decryption --query "Parameter.Value" --output text)
+GITHUB_TOKEN="$(aws ssm get-parameter \
+  --name "/telemetry/prod/GITHUB_TOKEN" \
+  --with-decryption \
+  --query "Parameter.Value" \
+  --output text)"
 
-if [ -z "$GITHUB_TOKEN" ]; then
-    echo "ERROR: Failed to retrieve GitHub token. Cannot clone repository."
-    exit 1
+if [[ -z "${GITHUB_TOKEN}" || "${GITHUB_TOKEN}" == "None" ]]; then
+  echo "ERROR: Failed to retrieve GitHub token. Cannot clone repository." >&2
+  exit 1
 fi
 
 echo "Cloning secure repository..."
-# Use sudo -u ubuntu to ensure the cloned files belong to the ubuntu user, not root
-sudo -u ubuntu git clone https://oauth2:${GITHUB_TOKEN}@github.com/your-username/sensor-platform.git "${REPO_DIR}"
-
-# CI/CD or a follow-on provisioning step should populate the repository.
-# Uncomment and configure the remote when wiring automated delivery:
-#
-#   sudo -u ubuntu git clone https://github.com/your-org/sensor-platform.git "${REPO_DIR}"
+sudo -u ubuntu git clone "https://oauth2:${GITHUB_TOKEN}@github.com/dev-hv/sensor-platform.git" "${REPO_DIR}"
 
 # -----------------------------------------------------------------------------
 # Section 6: Certbot post-renewal hook — reload frontend reverse proxy
@@ -98,7 +97,7 @@ HOOK_EOF
 chmod 0755 "${CERTBOT_HOOK_SCRIPT}"
 
 # -----------------------------------------------------------------------------
-# Section 7: Systemd oneshot — first-boot and subsequent reboot deployment
+# Section 7: Systemd oneshot — invoke deploy.sh on boot (env handled there)
 # -----------------------------------------------------------------------------
 cat > "${SYSTEMD_UNIT}" <<UNIT_EOF
 [Unit]
@@ -127,6 +126,5 @@ systemctl enable telemetry-boot.service
 # -----------------------------------------------------------------------------
 # Section 8: Trigger initial deployment
 # -----------------------------------------------------------------------------
-# Requires the repository (and ${REPO_DIR}/.env) to be present before this step.
-# Uncomment the git clone in Section 5, or deliver artifacts via CI/CD, prior to boot.
+# deploy.sh resolves API keys from infrastructure/.env or AWS SSM at runtime.
 systemctl start telemetry-boot.service
