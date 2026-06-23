@@ -16,7 +16,3 @@ dynamic_columns:
     sql_type: "DOUBLE PRECISION"
     min_value: 0.0
     max_value: 100.0
-  - name: "bus_voltage"
-    sql_type: "DOUBLE PRECISION"
-    min_value: 0.0
-    max_value: 36.0

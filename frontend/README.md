@@ -1,16 +1,26 @@
-# React + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Purpose
 
-Currently, two official plugins are available:
+The React dashboard is the operator-facing visualization layer. It polls the backend for schema metadata and live metrics, rendering multi-series charts with time-window presets. In production, all traffic is served over HTTPS via the Nginx container defined in `infrastructure/docker-compose.prod.yml`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Components
 
-## React Compiler
+| Path | Role |
+|------|------|
+| `src/App.jsx` | Main dashboard: schema fetch, metrics polling, Recharts line chart, time-range controls. |
+| `src/main.jsx` | React entry point. |
+| `vite.config.js` | Dev-server proxy to the backend (`/api` → `localhost:8080`). |
+| `Dockerfile` | Builds static assets with `VITE_READ_API_KEY` baked in at compile time; serves via Nginx. |
+| `nginx.conf` | Production Nginx: HTTP→HTTPS redirect, TLS termination, `/api/` reverse proxy to host-bound backend. |
+| `nginx.local.conf` | Local development Nginx config (no TLS). |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Design Philosophy
 
-## Expanding the ESLint configuration
+**Build-time read key, runtime proxy.** Because React runs in the browser, the read API key is embedded via Vite (`import.meta.env.VITE_READ_API_KEY`) during `docker build`. The write key never touches the frontend.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+**Same-origin API in production.** Nginx terminates TLS and proxies `/api/*` to the Go backend on the host loopback, so the browser never calls the backend directly and CORS stays simple.
+
+**Schema-driven UI.** Chart series and Y-axis assignment are derived from `GET /schema`; removing a metric from `schema.yaml` automatically removes it from the dashboard without frontend code changes.
+
+**Containerized static delivery.** Production ships a pre-built `dist/` bundle inside an Nginx Alpine image. No Node.js runtime on the EC2 host—only the compiled assets and Nginx worker processes.

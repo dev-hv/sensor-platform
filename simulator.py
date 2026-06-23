@@ -25,7 +25,7 @@ if not WRITE_API_KEY:
 # Define both environments clearly
 ENV_URLS = {
     "local": "http://localhost:8080/ingest",
-    "prod": "http://54.219.97.94/api/ingest"
+    "prod": "https://telemetry.vemurilabs.com/api/ingest"
 }
 
 # Automatically use local, unless you type 'prod' after the filename
@@ -46,7 +46,6 @@ def generate_mock_data(device_id):
         "serial_number": device_id,
         "temperature": round(random.uniform(35.0, 65.0), 1),
         "humidity": round(random.uniform(30.0, 50.0), 1),
-        "bus_voltage": round(random.choice([12.0, 24.0]) + random.uniform(-0.4, 0.4), 2),
     }
 
 
@@ -74,7 +73,7 @@ def main():
                     if response.status_code in (200, 201, 202):
                         print(
                             f"[SUCCESS] {device_id} -> Temp: {payload['temperature']}C | "
-                            f"Volts: {payload['bus_voltage']}V"
+                            f"Humidity: {payload['humidity']}%"
                         )
                     else:
                         print(
