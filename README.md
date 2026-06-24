@@ -136,4 +136,5 @@ Proprietary — Vemuri Labs.
 
 ### 🏛️ Architecture & Provenance
 
-The system architecture and security design were created by Hari Krishna Vemuri. Generative AI was used strictly as an implementation tool to write the application code and infrastructure scripts based on those design decisions.
+* **Design & Architecture:** All system design and security decisions by Hari Krishna Vemuri.
+* **Implementation:** Application code, infrastructure-as-code (IaC), and deployment scripts written via Generative AI assistance based on the architectural blueprint.
