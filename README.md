@@ -1,5 +1,8 @@
 # Sensor Platform
 
+![Architect](https://img.shields.io/badge/Architect-Hari%20Krishna%20Vemuri-1e3a8a?style=flat-square&logo=account&logoColor=white)
+![AI-Assisted](https://img.shields.io/badge/Development-AI--Assisted-2563EB?style=flat-square&logo=sparkles&logoColor=white)
+
 A secure, automated MedTech telemetry platform for ingesting, persisting, and visualizing vital stats from edge devices. The stack combines a schema-driven Go API, Postgres persistence, a React dashboard, and fully automated AWS EC2 deployment with Let's Encrypt TLS.
 
 ## Architecture Flow
@@ -130,3 +133,7 @@ Current dynamic metrics: **temperature**, **humidity**.
 ## License
 
 Proprietary — Vemuri Labs.
+
+### 🏛️ Architecture & Provenance
+
+The system architecture and security design were created by Hari Krishna Vemuri. Generative AI was used strictly as an implementation tool to write the application code and infrastructure scripts based on those design decisions.
